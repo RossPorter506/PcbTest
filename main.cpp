@@ -18,20 +18,34 @@
 
 #include <msp430.h>
 #include <stdint.h>
-#include "PCBV4Mappings.hpp"
+#include "PCBV5Mappings.hpp"
 #include "pin.hpp"
-
 
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
+
+    greenLED.setAsOutput().clear();
+    yellowLED.setAsOutput().clear();
+    redLED.setAsOutput().clear();
+
+    emitterEnable.setAsOutput().set();
+    payloadSpiMiso.setAsInput();
+    payloadSpiMosi.setAsOutput().clear();
+    payloadSpiSck.setAsOutput().clear();
+
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
-                                            // to activate previously configured port settings
+                                                // to activate previously configured port settings
 
-    yellowLED.setAsOutput();                // Set P2.1 to output direction
-
+    uint8_t i = 0;
     while(1){
-        yellowLED.toggle();
-        __delay_cycles(500000);
+        switch (i){
+            case 0: break;
+            case 1: greenLED.toggle(); break;
+            case 2: yellowLED.toggle(); break;
+            case 3: redLED.toggle(); break;
+        }
+        i = (i+1) & 0b11;
+        __delay_cycles(50000);
     }
 }
 

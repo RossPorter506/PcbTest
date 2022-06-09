@@ -11,23 +11,29 @@
 
 template< volatile uint8_t* direction, volatile uint8_t* port, uint8_t pin >
 struct Pin {
-    static void setAsOutput() {
+    static Pin setAsOutput() {
        *direction |= (1 << pin);
+       return Pin<direction, port, pin>(); // for operator chaining
     }
-    static void setAsInput() {
+    static Pin setAsInput() {
        *direction &= ~(1 << pin);
+       return Pin<direction, port, pin>(); // for operator chaining
     }
-    static void ToggleDirection(){
+    static Pin ToggleDirection(){
        *direction ^= (1 << pin);
+       return Pin<direction, port, pin>();
     }
-    static void set() {
+    static Pin set() {
       *port |= (1 << pin);
+      return Pin<direction, port, pin>();
     }
-    static void clear() {
+    static Pin clear() {
       *port &= ~(1 << pin);
+      return Pin<direction, port, pin>();
     }
-    static void toggle() {
+    static Pin toggle() {
         *port ^= (1 << pin);
+        return Pin<direction, port, pin>();
     }
     static bool isHigh() {
         return (*port) & (1 << pin);
