@@ -3,7 +3,7 @@
 
 #include "pin.hpp"
 
-// Shorthand
+// Shorthand for defining Pins
 #define PORT1 &P1SEL0, &P1SEL1, &P1DIR, &P1OUT
 #define PORT2 &P2SEL0, &P2SEL1, &P2DIR, &P2OUT
 #define PORT3 &P3SEL0, &P3SEL1, &P3DIR, &P3OUT
@@ -19,6 +19,33 @@ Pin<PORT4, 7> payloadSpiMiso;
 Pin<PORT4, 6> payloadSpiMosi;
 Pin<PORT4, 5> payloadSpiSck;
 
-Pin<PORT4, 4> emitterEnable;
+Pin<PORT6, 4> heaterDigipotChipSelect; // used to control the heater supply
+Pin<PORT6, 3> dacChipSelect; // DAC outputs are used to control the cathode offset and tether bias supply's target voltages
+Pin<PORT6, 2> tetherMeasurementADCChipSelect; //ADC1, measures voltages and currents from tether circuitry
+Pin<PORT6, 0> boardTemperatureADCChipSelect; //ADC2, measures board temperatures
+Pin<PORT5, 4> miscADCChipSelect; //ADC0, measures everything else
+
+Pin<PORT4, 2> obcSpiMiso;
+Pin<PORT4, 3> obcSpiMosi;
+Pin<PORT4, 1> obcSpiSck;
+Pin<PORT4, 0> obcSpiChipSelect;
+Pin<PORT2, 0> OBCSpiChipSelectInterrupt;
+
+Pin<PORT6, 6> payloadEnable; // turn on tether payload devices
+Pin<PORT4, 4> heaterEnable;
+Pin<PORT3, 0> cathodeSwitch; // connects cathode offset+ to exterior
+Pin<PORT6, 1> tetherSwitch; // connects tether bias+ to tether
+
+Pin<PORT5, 2> deploySense1;
+Pin<PORT3, 1> deploySense2;
+Pin<PORT5, 3> pinpullerDeploySense;
+
+Pin<PORT3, 2> burnWire1;
+Pin<PORT3, 3> burnWire1Backup;
+Pin<PORT5, 0> burnWire2;
+Pin<PORT5, 1> burnWire2Backup;
+
+Pin<PORT3, 4> tetherLMSReceiverEnable;
+Pin<PORT3, 5> tetherLMSLEDsEnable;
 
 #endif /* PCBV4MAPPINGS */

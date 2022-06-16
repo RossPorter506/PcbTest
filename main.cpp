@@ -42,7 +42,10 @@ void main(void) {
 
     initialisePeripheralSPI();
 
-    emitterEnable.setAsOutput().clear();
+    payloadEnable.setAsOutput().set(); // turn on supply that feeds all tether components, and enable heater
+    heaterEnable.setAsOutput().clear();
+    //boardTemperatureADCChipSelect.setAsOutput().set();
+    //cathodeSwitch.setAsOutput().set(); // Connect cathode+ to exterior
     /*
     payloadSpiMiso.setAsInput();
     payloadSpiMosi.setAsOutput().clear();
@@ -51,7 +54,7 @@ void main(void) {
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
                                                 // to activate previously configured port settings
     while(1){
-        toggleLEDs();
+        //toggleLEDs();
         __delay_cycles(50000);
     }
 }
