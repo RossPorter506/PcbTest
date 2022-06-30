@@ -16,9 +16,9 @@ enum PinFunction{
     tertiary = 3
 };
 
-#define PIN_PARAMS functionMSB, functionLSB, direction, port, pin
+#define PIN_PARAMS functionMSB, functionLSB, direction, portOut, portIn, pin
 
-template< volatile uint8_t* functionMSB, volatile uint8_t* functionLSB, volatile uint8_t* direction, volatile uint8_t* port, uint8_t pin >
+template< volatile uint8_t* functionMSB, volatile uint8_t* functionLSB, volatile uint8_t* direction, volatile uint8_t* portOut, volatile uint8_t* portIn, uint8_t pin>
 struct Pin {
     static Pin setFunction(PinFunction fn) {
         switch(fn){
@@ -44,7 +44,7 @@ struct Pin {
     }
     static Pin setAsOutput() {
        *direction |= (1 << pin);
-       return Pin<PIN_PARAMS>(); // for operator chaining
+       return Pin<PIN_PARAMS>();
     }
     static Pin setAsInput() {
        *direction &= ~(1 << pin);
@@ -55,23 +55,35 @@ struct Pin {
        return Pin<PIN_PARAMS>();
     }
     static Pin set() {
-      *port |= (1 << pin);
+      *portOut |= (1 << pin);
       return Pin<PIN_PARAMS>();
     }
     static Pin clear() {
-      *port &= ~(1 << pin);
+      *portOut &= ~(1 << pin);
       return Pin<PIN_PARAMS>();
     }
+    static Pin setToValue(bool value) {
+		if (value){
+			*portOut |= (1 << pin);
+		}
+		else{
+			*portOut &= ~(1 << pin);
+		}
+		return Pin<PIN_PARAMS>();
+	}
     static Pin toggle() {
-        *port ^= (1 << pin);
+        *portOut ^= (1 << pin);
         return Pin<PIN_PARAMS>();
     }
     static bool isHigh() {
-        return (*port) & (1 << pin);
+        return (*portIn) & (1 << pin);
     }
     static bool isLow() {
-        return !((*port) & (1 << pin));
+        return !((*portIn) & (1 << pin));
     }
+    static bool value() {
+		return (*portIn) & (1 << pin);
+	}
 };
 
 #endif /* PIN_HPP_ */

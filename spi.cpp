@@ -31,3 +31,27 @@ void initialisePeripheralSPI() {
 
     UCB1CTL1 &= ~UCSWRST; // **Initialize USCI state machine**
 }
+
+void InitialiseBitBangSPI(){
+	payloadSpiMiso.setAsInput();
+	payloadSpiMosi.setAsOutput().clear();
+	payloadSpiSck.setAsOutput().clear();
+}
+
+void bitBangPeripheralSPI(uint8_t len, uint32_t val){
+	uint8_t currentPos = 0;
+	while (currentPos < len){
+		if ( val & ((uint32_t)1 << (len - currentPos - 1)) ){
+			payloadSpiMosi.set();
+		}
+		else{
+			payloadSpiMosi.clear();
+		}
+
+		payloadSpiSck.set();
+		__delay_cycles(80); //duty cycle correction
+		payloadSpiSck.clear();
+
+		currentPos++;
+	}
+}

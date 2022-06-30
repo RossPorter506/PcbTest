@@ -21,6 +21,8 @@
 #include "PCBV5Mappings.hpp"
 #include "pin.hpp"
 #include "spi.hpp"
+#include "dac.hpp"
+#include "digipot.hpp"
 
 void toggleLEDs(){
     static uint8_t i = 0;
@@ -33,6 +35,62 @@ void toggleLEDs(){
     i = (i+1) & 0b11;
 }
 
+enum PayloadState{
+	payloadOff=0,
+	payloadOn=1,
+};
+
+void setChipSelects(PayloadState state){
+	boardTemperatureADCChipSelect.setAsOutput().set();
+	miscADCChipSelect.setAsOutput().set();
+
+	if (state == payloadOn){ //isolators are not powered when payload off, pins should not be set high.
+		heaterDigipotChipSelect.setAsOutput().set(); //heater
+		tetherMeasurementADCChipSelect.setAsOutput().set();
+		dacChipSelect.setAsOutput().set(); //tether bias, cathode offset
+	}
+}
+
+void testDigipot(){
+	payloadEnable.setAsOutput().set();
+	heaterEnable.setAsOutput().clear();
+
+	__delay_cycles(1000);
+
+	setChipSelects(payloadOn);
+
+	setDigipotChannelToValue(Channel1, 0xff);
+	heaterEnable.set();
+
+	while (1){
+		redLED.toggle();
+
+		if ( redLED.isHigh() ){
+			setDigipotChannelToValue(Channel1, 0x00);
+		}
+		else{
+			setDigipotChannelToValue(Channel1, 0xff);
+		}
+		__delay_cycles(4000000);
+	}
+}
+
+
+void testDAC(){
+	payloadEnable.setAsOutput().set(); // turn on supply that feeds all tether components
+	//heaterEnable.setAsOutput().clear();
+
+	__delay_cycles(1000); // wait for payload to start up - necessary?
+
+	heaterDigipotChipSelect.setAsOutput().set();
+	dacChipSelect.setAsOutput().set();
+
+	dacInit();
+	dacCommand(WriteToAndUpdateRegisterX, ChannelA, 0xfff); // write 0xfff to channel DAC A, and update it
+
+	dacCommand(WriteToAndUpdateRegisterX, ChannelC, 0xFFF);
+}
+
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
 
@@ -40,23 +98,24 @@ void main(void) {
     yellowLED.setAsOutput().clear();
     redLED.setAsOutput().clear();
 
-    initialisePeripheralSPI();
+    //initialisePeripheralSPI();
+    InitialiseBitBangSPI();
 
-    payloadEnable.setAsOutput().set(); // turn on supply that feeds all tether components, and enable heater
-    heaterEnable.setAsOutput().clear();
     //boardTemperatureADCChipSelect.setAsOutput().set();
     //cathodeSwitch.setAsOutput().set(); // Connect cathode+ to exterior
-    /*
-    payloadSpiMiso.setAsInput();
-    payloadSpiMosi.setAsOutput().clear();
-    payloadSpiSck.setAsOutput().clear();*/
+
+    deploySense1.setAsInput();
+    deploySense2.setAsInput();
 
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
-                                                // to activate previously configured port settings
+                                            // to activate previously configured port settings
+
+    //testDAC();
+    //testDigipot();
+
     while(1){
-        //toggleLEDs();
-        __delay_cycles(50000);
+    	//__delay_cycles(1000000);
+    	greenLED.setToValue(deploySense1.value());
+    	redLED.setToValue(deploySense2.value());
     }
 }
-
-
