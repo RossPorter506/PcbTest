@@ -16,9 +16,9 @@ enum PinFunction{
     tertiary = 3
 };
 
-#define PIN_PARAMS functionMSB, functionLSB, direction, portOut, portIn, pin
+#define PIN_PARAMS functionMSB, functionLSB, direction, pullResistorEnable, portOut, portIn, pin
 
-template< volatile uint8_t* functionMSB, volatile uint8_t* functionLSB, volatile uint8_t* direction, volatile uint8_t* portOut, volatile uint8_t* portIn, uint8_t pin>
+template< volatile uint8_t* functionMSB, volatile uint8_t* functionLSB, volatile uint8_t* direction, volatile uint8_t* pullResistorEnable, volatile uint8_t* portOut, volatile uint8_t* portIn, uint8_t pin>
 struct Pin {
     static Pin setFunction(PinFunction fn) {
         switch(fn){
