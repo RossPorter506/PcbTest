@@ -6,11 +6,11 @@
 void initialisePeripheralSPI() {
 
     // Set up MISO line
-    payloadSpiMiso.setFunction(primary);
+    payloadSpiMisoPin.setFunction(primary);
 
     // Set up MOSI line and clock line
-    payloadSpiMosi.setFunction(primary);
-    payloadSpiSck.setFunction(primary);
+    payloadSpiMosiPin.setFunction(primary);
+    payloadSpiSckPin.setFunction(primary);
 
     //Disable the USCI Module
     UCB1CTL1 |= UCSWRST;
@@ -33,25 +33,63 @@ void initialisePeripheralSPI() {
 }
 
 void InitialiseBitBangSPI(){
-	payloadSpiMiso.setAsInput();
-	payloadSpiMosi.setAsOutput().clear();
-	payloadSpiSck.setAsOutput().clear();
+	payloadSpiMisoPin.setAsInput();
+	payloadSpiMosiPin.setAsOutput().clear();
+	payloadSpiSckPin.setAsOutput().clear();
 }
 
-void bitBangPeripheralSPI(uint8_t len, uint32_t val){
+//These functions only toggle the sck pin, make sure it is the right value first. Low for data on rising edge, high for data on falling edge
+void bitBangPeripheralSPISend(uint8_t len, uint32_t val){
 	uint8_t currentPos = 0;
 	while (currentPos < len){
 		if ( val & ((uint32_t)1 << (len - currentPos - 1)) ){
-			payloadSpiMosi.set();
+			payloadSpiMosiPin.set();
 		}
 		else{
-			payloadSpiMosi.clear();
+			payloadSpiMosiPin.clear();
 		}
 
-		payloadSpiSck.set();
+		payloadSpiSckPin.toggle();
 		__delay_cycles(80); //duty cycle correction
-		payloadSpiSck.clear();
+		payloadSpiSckPin.toggle();
 
 		currentPos++;
 	}
+}
+
+uint32_t bitBangPeripheralSPIReceive(uint8_t len){
+	uint32_t result = 0;
+	uint8_t currentPos = 0;
+	while (currentPos < len){
+
+		payloadSpiSckPin.toggle();
+		__delay_cycles(40); //duty cycle correction
+		result = (result << 1) | payloadSpiMisoPin.value(); // read some time after edge to give slave time to output
+		payloadSpiSckPin.toggle();
+
+		currentPos++;
+	}
+	return result;
+}
+
+uint32_t bitBangPeripheralSPIDuplex(uint8_t len, uint32_t val){
+	uint32_t result = 0;
+	uint8_t currentPos = 0;
+	while (currentPos < len){
+		// Write before edge
+		if ( val & ((uint32_t)1 << (len - currentPos - 1)) ){
+			payloadSpiMosiPin.set();
+		}
+		else{
+			payloadSpiMosiPin.clear();
+		}
+
+		payloadSpiSckPin.toggle(); // active edge
+		__delay_cycles(80); //duty cycle correction
+		result = (result << 1) | payloadSpiMisoPin.value(); // read some time after edge to give slave time to output
+		payloadSpiSckPin.toggle();
+
+		currentPos++;
+	}
+	return result;
 }

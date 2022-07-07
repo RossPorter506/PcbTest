@@ -12,8 +12,9 @@
 #include "digipot.hpp"
 
 void setDigipotChannelToValue(DigipotChannel channel, uint8_t value){
-	heaterDigipotChipSelect.clear();
-	bitBangPeripheralSPI(9, (channel << 8) + value);
-	heaterDigipotChipSelect.set();
+	payloadSpiSckPin.clear(); // Data on rising edge
+	heaterDigipotChipSelectPin.clear();
+	bitBangPeripheralSPISend(9, (channel << 8) + value);
+	heaterDigipotChipSelectPin.set();
 }
 

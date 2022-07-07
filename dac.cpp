@@ -12,10 +12,11 @@
 #include "spi.hpp"
 
 void dacCommand(DACCommand command, DACChannel channel, uint16_t value){
-	dacChipSelect.clear();
+	payloadSpiSckPin.clear(); //Data on rising edge
+	dacChipSelectPin.clear();
 	uint32_t total = (uint32_t)((uint32_t)command << 20) | ((uint32_t)channel << 16) | ((uint32_t)value << 4);
-	bitBangPeripheralSPI(24, total);
-	dacChipSelect.set();
+	bitBangPeripheralSPISend(24, total);
+	dacChipSelectPin.set();
 }
 
 void dacInit(){

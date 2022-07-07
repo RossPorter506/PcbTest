@@ -28,48 +28,48 @@ void toggleLEDs(){
     static uint8_t i = 0;
     switch (i){
         case 0: break;
-        case 1: greenLED.toggle(); break;
-        case 2: yellowLED.toggle(); break;
-        case 3: redLED.toggle(); break;
+        case 1: greenLEDPin.toggle(); break;
+        case 2: yellowLEDPin.toggle(); break;
+        case 3: redLEDPin.toggle(); break;
     }
     i = (i+1) & 0b11;
 }
 
 enum PayloadState{
-	payloadOff=0,
-	payloadOn=1,
+	payloadIsOff=0,
+	payloadIsOn=1,
 };
 
 void setChipSelects(PayloadState state){
-	boardTemperatureADCChipSelect.setAsOutput().set();
-	miscADCChipSelect.setAsOutput().set();
+	boardTemperatureADCChipSelectPin.setAsOutput().set();
+	miscADCChipSelectPin.setAsOutput().set();
 
-	if (state == payloadOn){ //isolators are not powered when payload off, pins should not be set high.
-		heaterDigipotChipSelect.setAsOutput().set(); //heater
-		tetherMeasurementADCChipSelect.setAsOutput().set();
-		dacChipSelect.setAsOutput().set(); //tether bias, cathode offset
+	if (state == payloadIsOn){ //isolators are not powered when payload off, pins should not be set high.
+		heaterDigipotChipSelectPin.setAsOutput().set(); //heater
+		tetherMeasurementADCChipSelectPin.setAsOutput().set();
+		dacChipSelectPin.setAsOutput().set(); //tether bias, cathode offset
 	}
 }
 
 void testDigipot(){
-	payloadEnable.setAsOutput().set();
-	heaterEnable.setAsOutput().clear();
+	payloadEnablePin.setAsOutput().set();
+	heaterEnablePin.setAsOutput().clear();
 
 	__delay_cycles(1000);
 
-	setChipSelects(payloadOn);
+	setChipSelects(payloadIsOn);
 
-	setDigipotChannelToValue(Channel1, 0xff);
-	heaterEnable.set();
+	setDigipotChannelToValue(heaterDigipotChannel, 0xff);
+	heaterEnablePin.set();
 
 	while (1){
-		redLED.toggle();
+		redLEDPin.toggle();
 
-		if ( redLED.isHigh() ){
-			setDigipotChannelToValue(Channel1, 0x00);
+		if ( redLEDPin.isHigh() ){
+			setDigipotChannelToValue(heaterDigipotChannel, 0x00);
 		}
 		else{
-			setDigipotChannelToValue(Channel1, 0xff);
+			setDigipotChannelToValue(heaterDigipotChannel, 0xff);
 		}
 		__delay_cycles(4000000);
 	}
@@ -77,26 +77,31 @@ void testDigipot(){
 
 
 void testDAC(){
-	payloadEnable.setAsOutput().set(); // turn on supply that feeds all tether components
+	payloadEnablePin.setAsOutput().set(); // turn on supply that feeds all tether components
 	//heaterEnable.setAsOutput().clear();
+	setChipSelects(payloadIsOn);
 
 	__delay_cycles(1000); // wait for payload to start up - necessary?
 
-	heaterDigipotChipSelect.setAsOutput().set();
-	dacChipSelect.setAsOutput().set();
+	heaterDigipotChipSelectPin.setAsOutput().set();
+	dacChipSelectPin.setAsOutput().set();
 
 	dacInit();
-	dacCommand(WriteToAndUpdateRegisterX, ChannelA, 0xfff); // write 0xfff to channel DAC A, and update it
+	dacCommand(WriteToAndUpdateRegisterX, cathodeOffsetSupplyControlChannel, 0xfff); // write 0xfff to channel DAC A, and update it
+}
 
-	dacCommand(WriteToAndUpdateRegisterX, ChannelC, 0xFFF);
+void testADC(){
+	uint16_t result1 = readValueFromADCSensor((Sensor){TetherADC, IN0}); //usually you would pass in the Sensor you want from PCBMappings, but for testing this is fine.
+	uint16_t result2 = readValueFromADCSensor((Sensor){TemperatureADC, IN0});
+	uint16_t result3 = readValueFromADCSensor((Sensor){MiscADC, IN0});
 }
 
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
 
-    greenLED.setAsOutput().clear();
-    yellowLED.setAsOutput().clear();
-    redLED.setAsOutput().clear();
+    greenLEDPin.setAsOutput().clear();
+    yellowLEDPin.setAsOutput().clear();
+    redLEDPin.setAsOutput().clear();
 
     //initialisePeripheralSPI();
     InitialiseBitBangSPI();
@@ -104,18 +109,19 @@ void main(void) {
     //boardTemperatureADCChipSelect.setAsOutput().set();
     //cathodeSwitch.setAsOutput().set(); // Connect cathode+ to exterior
 
-    deploySense1.setAsInput();
-    deploySense2.setAsInput();
+    deploySense1Pin.setAsInput();
+    deploySense2Pin.setAsInput();
 
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
                                             // to activate previously configured port settings
 
     //testDAC();
     //testDigipot();
+    testADC();
 
     while(1){
     	//__delay_cycles(1000000);
-    	greenLED.setToValue(deploySense1.value());
-    	redLED.setToValue(deploySense2.value());
+    	greenLEDPin.setToValue(deploySense1Pin.value());
+    	redLEDPin.setToValue(deploySense2Pin.value());
     }
 }
