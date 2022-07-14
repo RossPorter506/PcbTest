@@ -11,7 +11,7 @@
 #include "adc.hpp"
 
 // Note: ADC always sends the value of IN0 when first selected, second reading will be from the channel provided.
-uint16_t readValueFromADCSensor(const Sensor &sensor){
+uint16_t ADC::readCountFrom(const Sensor &sensor){
 	uint16_t result = 0;
 	payloadSpiSckPin.set(); // Data on falling edge
 
@@ -46,10 +46,13 @@ uint16_t readValueFromADCSensor(const Sensor &sensor){
 	return result;
 }
 
-// Given an ADC count, returns the voltage in millivolts
-uint16_t adcCountToVoltage(uint16_t count){
-	const uint16_t maxVoltageInMillivolts = 5000;
+// Given an ADC count, returns the voltage in millivolts. Max: 5000, Min: 0
+uint16_t ADC::countToVoltage(uint16_t count){
 	const uint16_t adcResolution = 4095;
-	return ((uint32_t)count * maxVoltageInMillivolts) / adcResolution;
+	return ((uint32_t)count * ADC_VCC_VOLTAGE_MILLIVOLTS) / adcResolution; // could bump 4095 to 4096 and use bit shift instead of divide if necessary
+}
+
+uint16_t ADC::readVoltageFrom(const Sensor &sensor){
+	return countToVoltage(readCountFrom(sensor));
 }
 

@@ -8,7 +8,7 @@
 #ifndef ADC_HPP_
 #define ADC_HPP_
 
-enum ADC {
+enum TargetADC {
 	TetherADC,
 	TemperatureADC,
 	MiscADC,
@@ -26,10 +26,29 @@ enum ADCChannel {
 };
 
 struct Sensor {
-	ADC adc;
+	TargetADC adc;
 	ADCChannel channel;
 };
 
-uint16_t readValueFromADCSensor(const Sensor &sensor);
+struct LMSTemperatureSensor : public Sensor {
+	LMSTemperatureSensor(TargetADC adc,ADCChannel channel) : Sensor{adc,channel} {};
+};
 
+struct PayloadTemperatureSensor : public Sensor{
+	PayloadTemperatureSensor(TargetADC adc,ADCChannel channel) : Sensor{adc,channel} {};
+};
+
+struct VoltageSensor : public Sensor {
+	VoltageSensor(TargetADC adc,ADCChannel channel) : Sensor{adc,channel} {};
+};
+
+struct CurrentSensor : public Sensor {
+	CurrentSensor(TargetADC adc,ADCChannel channel) : Sensor{adc,channel} {};
+};
+
+namespace ADC {
+	uint16_t readCountFrom(const Sensor &sensor);
+	uint16_t countToVoltage(uint16_t count);
+	uint16_t readVoltageFrom(const Sensor &sensor);
+}
 #endif /* ADC_HPP_ */

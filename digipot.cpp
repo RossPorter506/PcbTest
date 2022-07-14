@@ -11,10 +11,27 @@
 #include "spi.hpp"
 #include "digipot.hpp"
 
-void setDigipotChannelToValue(DigipotChannel channel, uint8_t value){
+static const uint32_t digipotMaxResistance = 100000;
+static const uint8_t digipotWiperResistance = 100;
+static const uint8_t digipotResolution = 255;
+
+void Digipot::setChannelToValue(DigipotChannel channel, uint8_t value){
 	payloadSpiSckPin.clear(); // Data on rising edge
 	heaterDigipotChipSelectPin.clear();
-	bitBangPeripheralSPISend(9, (channel << 8) + value);
+	bitBangPeripheralSPISend(16, (channel << 8) + value);
 	heaterDigipotChipSelectPin.set();
 }
 
+uint8_t Digipot::resistanceToCount(uint32_t targetResistance){
+	uint8_t count;
+	if (targetResistance > digipotMaxResistance){
+		count = digipotResolution;
+	}
+	else if (targetResistance < digipotWiperResistance){
+		count = 0;
+	}
+	else{
+		count = ((targetResistance - digipotWiperResistance)*digipotResolution)/digipotMaxResistance;
+	}
+	return count;
+}

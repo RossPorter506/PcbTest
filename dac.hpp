@@ -28,8 +28,9 @@ enum DACChannel{
 	AllChannels=0b1111,
 };
 
-void dacCommand(DACCommand command, DACChannel channel, uint16_t value);
-
-void dacInit();
-
+namespace DAC{
+	void sendCommand(DACCommand command, DACChannel channel, uint16_t value);
+	void init();
+	uint16_t voltageToCount(uint16_t targetVoltageMillivolts);
+}
 #endif /* DAC_HPP_ */
