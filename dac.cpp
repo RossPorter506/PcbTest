@@ -29,7 +29,7 @@ uint16_t DAC::voltageToCount(uint16_t targetVoltageMillivolts){
 	if (targetVoltageMillivolts > DAC_VCC_VOLTAGE_MILLIVOLTS){
 		targetVoltageMillivolts = DAC_VCC_VOLTAGE_MILLIVOLTS;
 	}
-	return (targetVoltageMillivolts * dacResolution) / DAC_VCC_VOLTAGE_MILLIVOLTS;
+	return ((uint32_t)targetVoltageMillivolts * dacResolution) / DAC_VCC_VOLTAGE_MILLIVOLTS;
 }
 
 

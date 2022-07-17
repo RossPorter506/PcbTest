@@ -48,7 +48,7 @@ struct CurrentSensor : public Sensor {
 
 namespace ADC {
 	uint16_t readCountFrom(const Sensor &sensor);
-	uint16_t countToVoltage(uint16_t count);
-	uint16_t readVoltageFrom(const Sensor &sensor);
+	uint32_t countToVoltage(uint16_t count);
+	uint32_t readVoltageFrom(const Sensor &sensor);
 }
 #endif /* ADC_HPP_ */

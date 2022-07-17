@@ -26,7 +26,7 @@ uint8_t getPayloadTemperature(const PayloadTemperatureSensor &sensor){
 /* Supplies */
 /* Heater */
 
-void setHeaterVoltage(uint16_t targetVoltageMillivolts){
+void setHeaterVoltage(uint16_t targetVoltageMillivolts){ // CHECKED: Undershoots by about 8%
 	if (targetVoltageMillivolts > HEATER_MAX_VOLTAGE_MILLIVOLTS){
 		targetVoltageMillivolts = HEATER_MAX_VOLTAGE_MILLIVOLTS;
 	}
@@ -35,12 +35,12 @@ void setHeaterVoltage(uint16_t targetVoltageMillivolts){
 	Digipot::setChannelToValue(heaterDigipotChannel, digipotDigitalValue);
 }
 
-uint16_t getHeaterVoltage(){
+uint16_t getHeaterVoltage(){ // CHECKED: Underestimates by about 2%
 	uint16_t adcVoltage = ADC::readVoltageFrom(heaterVoltageSensor);
 	return HEATER_VOLTAGE_EQ(adcVoltage);
 }
 
-uint16_t getHeaterCurrent(){
+uint16_t getHeaterCurrent(){ // CHECKED: Correct order of magnitude, limited by missing 1mohm sense resistor on PCB, using a solder bridge instead >.<
 	uint16_t adcVoltage = ADC::readVoltageFrom(heaterCurrentSensor);
 	return HEATER_CURRENT_EQ(adcVoltage);
 }
@@ -68,7 +68,7 @@ uint32_t getTetherBiasCurrent(uint32_t targetVoltageMillivolts){
 
 /* Cathode Offset */
 
-void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){
+void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){ // CHECKED: Overshoots by about 1%
 	if (targetVoltageMillivolts > CATHODE_OFFSET_MAX_VOLTAGE_MILLIVOLTS){
 		targetVoltageMillivolts = CATHODE_OFFSET_MAX_VOLTAGE_MILLIVOLTS;
 	}
@@ -77,19 +77,24 @@ void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){
 	DAC::sendCommand(WriteToAndUpdateRegisterX, cathodeOffsetSupplyControlChannel, count);
 }
 
-uint32_t getCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){
-	uint16_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetVoltageSensor);
-	return CATHODE_OFFSET_VOLTAGE_EQ(adcVoltage);
+uint32_t getCathodeOffsetVoltage(){ // CHECKED: Underestimates by about 2%
+	uint32_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetVoltageSensor);
+	int32_t temp = CATHODE_OFFSET_VOLTAGE_EQ(adcVoltage);
+	if (temp < 0) {
+		temp = 0;
+	}
+	return (uint32_t)temp;
 }
 
-uint32_t getCathodeOffsetCurrent(uint32_t targetVoltageMillivolts){
-	uint16_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetCurrentSensor);
-	return CATHODE_OFFSET_CURRENT_EQ(adcVoltage);
+uint32_t getCathodeOffsetCurrent(){
+	uint32_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetCurrentSensor);
+	uint32_t temp = CATHODE_OFFSET_CURRENT_EQ(adcVoltage);
+	return temp;
 }
 
 /* Repeller */
 
 uint32_t getRepellerVoltage(){
-	uint16_t adcVoltage = ADC::readVoltageFrom(repellerVoltageSensor);
+	uint32_t adcVoltage = ADC::readVoltageFrom(repellerVoltageSensor);
 	return REPELLER_VOLTAGE_EQ(adcVoltage);
 }

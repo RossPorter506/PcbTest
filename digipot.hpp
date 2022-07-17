@@ -17,6 +17,6 @@ enum DigipotChannel{
 
 namespace Digipot{
 	void setChannelToValue(DigipotChannel channel, uint8_t value);
-	uint8_t resistanceToCount(uint16_t targetResistance);
+	uint8_t resistanceToCount(uint32_t targetResistance);
 }
 #endif /* DIGIPOT_HPP_ */

@@ -92,7 +92,7 @@ const DigipotChannel heaterDigipotChannel = Channel1;
 #define REPELLER_VOLTAGE_EQ(v) ((((uint32_t)(v)-98)*5000)/101000)
 #define TETHER_BIAS_VOLTAGE_EQ(v) ((uint32_t)(v)*106 + 55) 	//NOTE: Protection zener diode makes conversions non-linear at the high end,
 															//This is not accounted for here. Check ADC Signal processing document for details
-#define CATHODE_OFFSET_VOLTAGE_EQ(v) ((uint32_t)(v)*85.75-398430) //NOTE: Protection zener diode makes conversions non-linear at the high end.
+#define CATHODE_OFFSET_VOLTAGE_EQ(v) ((v)*-85.75+398430) //NOTE: Protection zener diode makes conversions non-linear at the high end.
 																//This is not accounted for here. Check ADC Signal processing document for details
 
 #define HEATER_CURRENT_EQ(v) (v/5) // TODO: Check this is correct
@@ -111,7 +111,7 @@ const DigipotChannel heaterDigipotChannel = Channel1;
 /* Supply control equations */
 
 //Takes in a target voltage (in millivolts) for the heater and calculates what resistance the digipot should be set to
-#define HEATER_TARGET_VOLTAGE_TO_DIGIPOT_RESISTANCE(v) ( 75000 / (((uint32_t)targetVoltageMillivolts)/810 - 1) )
+#define HEATER_TARGET_VOLTAGE_TO_DIGIPOT_RESISTANCE(v) ( 75000 / (((float)v)/810 - 1) )
 
 //Takes in a target voltage (in millivolts) for the tether bias / cathode offset supplies and determines what voltage the DAC needs to be set to.
 #define TETHER_BIAS_TARGET_VOLTAGE_TO_DAC_VOLTAGE(v) ((v)/51)

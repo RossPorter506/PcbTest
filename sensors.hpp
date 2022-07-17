@@ -34,9 +34,9 @@ uint32_t getTetherBiasCurrent(uint32_t targetVoltageMillivolts);
 
 void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts);
 
-uint32_t getCathodeOffsetVoltage(uint32_t targetVoltageMillivolts);
+uint32_t getCathodeOffsetVoltage();
 
-uint32_t getCathodeOffsetCurrent(uint32_t targetVoltageMillivolts);
+uint32_t getCathodeOffsetCurrent();
 
 /* Repeller */
 

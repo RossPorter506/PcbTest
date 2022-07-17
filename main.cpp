@@ -24,6 +24,7 @@
 #include "dac.hpp"
 #include "digipot.hpp"
 #include "sensors.hpp"
+#include "serial.hpp"
 
 void toggleLEDs(){
     static uint8_t i = 0;
@@ -41,7 +42,7 @@ enum PayloadState{
 	payloadIsOn=1,
 };
 
-void setChipSelects(PayloadState state){
+void disableChipSelects(PayloadState state){
 	boardTemperatureADCChipSelectPin.setAsOutput().set();
 	miscADCChipSelectPin.setAsOutput().set();
 
@@ -58,12 +59,12 @@ void testDigipot(){
 
 	__delay_cycles(1000);
 
-	setChipSelects(payloadIsOn);
+	disableChipSelects(payloadIsOn);
 
-	Digipot::setChannelToValue(heaterDigipotChannel, 0xff);
+	Digipot::setChannelToValue(heaterDigipotChannel, 8);
 	heaterEnablePin.set();
 
-	while (1){
+	/*while (1){
 		redLEDPin.toggle();
 
 		if ( redLEDPin.isHigh() ){
@@ -73,14 +74,14 @@ void testDigipot(){
 			Digipot::setChannelToValue(heaterDigipotChannel, 0xff);
 		}
 		__delay_cycles(4000000);
-	}
+	}*/
 }
 
 
 void testDAC(){
 	payloadEnablePin.setAsOutput().set(); // turn on supply that feeds all tether components
 	//heaterEnable.setAsOutput().clear();
-	setChipSelects(payloadIsOn);
+	disableChipSelects(payloadIsOn);
 
 	__delay_cycles(1000); // wait for payload to start up - necessary?
 
@@ -88,34 +89,31 @@ void testDAC(){
 	dacChipSelectPin.setAsOutput().set();
 
 	DAC::init();
-	DAC::sendCommand(WriteToAndUpdateRegisterX, tetherBiasSupplyControlChannel, 1024); // write 0xfff to channel DAC A, and update it
+	DAC::sendCommand(WriteToAndUpdateRegisterX, cathodeOffsetSupplyControlChannel, 0); // write 0xfff to channel DAC A, and update it
 
-	while (1) {
-		int x = ADC::readCountFrom(tetherBiasVoltageSensor);
-
-		unsigned int d = 10000u;
-		while (d > 0) {
-			__delay_cycles(10);
-			UCA1TXBUF = x / d + '0';
-			x %= d;
-			d /= 10u;
-		}
-
-		__delay_cycles(10);
-		UCA1TXBUF = '\r';
-
-		__delay_cycles(10);
-		UCA1TXBUF = '\n';
-
+	/*while (1) {
+		uint16_t x = ADC::readCountFrom(tetherBiasVoltageSensor);
+		Serial::printNumLn(x);
 		__delay_cycles(100000);
-	}
+		redLEDPin.toggle();
+	}*/
 }
 
 void testADC(){
-	//usually you would pass in the Sensor you want from PCBMappings rather than , but for testing we just want to try the first channel from each ADC
-	uint16_t result1 = ADC::readCountFrom((Sensor){TetherADC, IN0});
-	uint16_t result2 = ADC::readCountFrom((Sensor){TemperatureADC, IN0});
-	uint16_t result3 = ADC::readCountFrom((Sensor){MiscADC, IN0});
+	//usually you would pass in the Sensor you want from PCBMappings rather than creating an initialiser list here, but for testing we just want to try the first channel from each ADC
+	//uint16_t result1 = ADC::readCountFrom((Sensor){TetherADC, IN0});
+	//uint16_t result2 = ADC::readCountFrom((Sensor){TemperatureADC, IN0});
+	//uint16_t result3 = ADC::readCountFrom((Sensor){MiscADC, IN0});
+	while (1) {
+		uint32_t x = 0;
+		for (uint8_t i = 0; i < 10; i++){
+			x += getHeaterVoltage();//ADC::readVoltageFrom(cathodeOffsetVoltageSensor);
+		}
+		x = x / 10; // ADC::readCountFrom(heaterCurrentSensor);
+		Serial::printNumLn(x);
+		__delay_cycles(100000);
+		redLEDPin.toggle();
+	}
 }
 
 void testSupplyControl(){
@@ -139,6 +137,7 @@ void main(void) {
     deploySense1Pin.setAsInput();
     deploySense2Pin.setAsInput();
 
+    //Serial setup
     UCA1CTLW0 = UCSWRST__ENABLE;
     UCA1MCTLW = 0xD600u;
     UCA1BRW = 8u;
@@ -149,9 +148,12 @@ void main(void) {
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
                                             // to activate previously configured port settings
 
-    testDAC();
-//    testDigipot();
-    //testADC();
+
+    //testDAC();
+    testDigipot();
+    setHeaterVoltage(2000);
+    //DAC::sendCommand(WriteToAndUpdateRegisterX, cathodeOffsetSupplyControlChannel, 2048);
+    testADC();
 //    testSupplyControl();
 
     while(1){

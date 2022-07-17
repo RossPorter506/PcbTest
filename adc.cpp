@@ -47,12 +47,12 @@ uint16_t ADC::readCountFrom(const Sensor &sensor){
 }
 
 // Given an ADC count, returns the voltage in millivolts. Max: 5000, Min: 0
-uint16_t ADC::countToVoltage(uint16_t count){
+uint32_t ADC::countToVoltage(uint16_t count){
 	const uint16_t adcResolution = 4095;
 	return ((uint32_t)count * ADC_VCC_VOLTAGE_MILLIVOLTS) / adcResolution; // could bump 4095 to 4096 and use bit shift instead of divide if necessary
 }
 
-uint16_t ADC::readVoltageFrom(const Sensor &sensor){
+uint32_t ADC::readVoltageFrom(const Sensor &sensor){
 	return countToVoltage(readCountFrom(sensor));
 }
 
