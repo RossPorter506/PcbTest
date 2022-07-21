@@ -11,22 +11,22 @@
 #include "digipot.hpp"
 #include <stdint.h>
 
-/* Temperature */
+/***** Temperature *****/
 
-uint8_t getLMSTemperature(const LMSTemperatureSensor &sensor){
+uint8_t getLMSTemperature(const LMSTemperatureSensor &sensor){ //Temperature in Kelvin
 	uint16_t adcVoltage = ADC::readVoltageFrom(sensor);
 	return LMS_TEMPERATURE_EQ(adcVoltage);
 }
 
-uint8_t getPayloadTemperature(const PayloadTemperatureSensor &sensor){
+uint8_t getPayloadTemperature(const PayloadTemperatureSensor &sensor){ //Temperature in Kelvin
 	uint16_t adcVoltage = ADC::readVoltageFrom(sensor);
 	return PAYLOAD_TEMPERATURE_EQ(adcVoltage);
 }
 
-/* Supplies */
+/***** Supplies *****/
 /* Heater */
 
-void setHeaterVoltage(uint16_t targetVoltageMillivolts){ // CHECKED: Undershoots by about 8%
+void setHeaterVoltage(uint16_t targetVoltageMillivolts){ // CHECKED: Undershoots by about 8%. Changing to linear control on the next board anyway.
 	if (targetVoltageMillivolts > HEATER_MAX_VOLTAGE_MILLIVOLTS){
 		targetVoltageMillivolts = HEATER_MAX_VOLTAGE_MILLIVOLTS;
 	}
@@ -35,12 +35,12 @@ void setHeaterVoltage(uint16_t targetVoltageMillivolts){ // CHECKED: Undershoots
 	Digipot::setChannelToValue(heaterDigipotChannel, digipotDigitalValue);
 }
 
-uint16_t getHeaterVoltage(){ // CHECKED: Underestimates by about 2%
+int16_t getHeaterVoltage(){ // CHECKED
 	uint16_t adcVoltage = ADC::readVoltageFrom(heaterVoltageSensor);
 	return HEATER_VOLTAGE_EQ(adcVoltage);
 }
 
-uint16_t getHeaterCurrent(){ // CHECKED: Correct order of magnitude, limited by missing 1mohm sense resistor on PCB, using a solder bridge instead >.<
+int16_t getHeaterCurrent(){ // CHECKED: Correct order of magnitude, limited by missing 1mohm sense resistor on PCB, using a solder bridge instead >.<
 	uint16_t adcVoltage = ADC::readVoltageFrom(heaterCurrentSensor);
 	return HEATER_CURRENT_EQ(adcVoltage);
 }
@@ -56,19 +56,19 @@ void setTetherBiasVoltage(uint32_t targetVoltageMillivolts){
 	DAC::sendCommand(WriteToAndUpdateRegisterX, tetherBiasSupplyControlChannel, count);
 }
 
-uint32_t getTetherBiasVoltage(uint32_t targetVoltageMillivolts){
+int32_t getTetherBiasVoltage(){
 	uint16_t adcVoltage = ADC::readVoltageFrom(tetherBiasVoltageSensor);
 	return TETHER_BIAS_VOLTAGE_EQ(adcVoltage);
 }
 
-uint32_t getTetherBiasCurrent(uint32_t targetVoltageMillivolts){
+int32_t getTetherBiasCurrent(){
 	uint16_t adcVoltage = ADC::readVoltageFrom(tetherBiasCurrentSensor);
 	return TETHER_BIAS_CURRENT_EQ(adcVoltage);
 }
 
 /* Cathode Offset */
 
-void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){ // CHECKED: Overshoots by about 1%
+void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){ // CHECKED
 	if (targetVoltageMillivolts > CATHODE_OFFSET_MAX_VOLTAGE_MILLIVOLTS){
 		targetVoltageMillivolts = CATHODE_OFFSET_MAX_VOLTAGE_MILLIVOLTS;
 	}
@@ -77,24 +77,19 @@ void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){ // CHECKED: Over
 	DAC::sendCommand(WriteToAndUpdateRegisterX, cathodeOffsetSupplyControlChannel, count);
 }
 
-uint32_t getCathodeOffsetVoltage(){ // CHECKED: Underestimates by about 2%
-	uint32_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetVoltageSensor);
-	int32_t temp = CATHODE_OFFSET_VOLTAGE_EQ(adcVoltage);
-	if (temp < 0) {
-		temp = 0;
-	}
-	return (uint32_t)temp;
+int32_t getCathodeOffsetVoltage(){ // CHECKED
+	uint16_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetVoltageSensor);
+	return CATHODE_OFFSET_VOLTAGE_EQ(adcVoltage);
 }
 
-uint32_t getCathodeOffsetCurrent(){
-	uint32_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetCurrentSensor);
-	uint32_t temp = CATHODE_OFFSET_CURRENT_EQ(adcVoltage);
-	return temp;
+int32_t getCathodeOffsetCurrent(){
+	uint16_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetCurrentSensor);
+	return CATHODE_OFFSET_CURRENT_EQ(adcVoltage);
 }
 
 /* Repeller */
 
-uint32_t getRepellerVoltage(){
-	uint32_t adcVoltage = ADC::readVoltageFrom(repellerVoltageSensor);
+int32_t getRepellerVoltage(){
+	uint16_t adcVoltage = ADC::readVoltageFrom(repellerVoltageSensor);
 	return REPELLER_VOLTAGE_EQ(adcVoltage);
 }

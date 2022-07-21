@@ -42,6 +42,28 @@ struct Pin {
         }
        return Pin<PIN_PARAMS>(); // for operator chaining
     }
+    static PinFunction getCurrentFunction() {
+    	bool primaryFn = !!(*functionMSB & (1 << pin));
+    	bool secondaryFn = !!(*functionLSB & (1 << pin));
+    	if (primaryFn && secondaryFn){
+    		return tertiary;
+    	}
+    	else if (primaryFn && !secondaryFn){
+    		return secondary;
+    	}
+    	else if (!primaryFn && secondaryFn){
+			return primary;
+		}
+    	else {
+    		return gpio;
+    	}
+    }
+    static bool isOutput() {
+		return (*direction & (1 << pin));
+	}
+    static bool isInput() {
+		return !(*direction & (1 << pin));
+	}
     static Pin setAsOutput() {
        *direction |= (1 << pin);
        return Pin<PIN_PARAMS>();

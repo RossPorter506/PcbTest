@@ -26,21 +26,21 @@ uint16_t getHeaterCurrent();
 
 void setTetherBiasVoltage(uint32_t targetVoltageMillivolts);
 
-uint32_t getTetherBiasVoltage(uint32_t targetVoltageMillivolts);
+uint32_t getTetherBiasVoltage();
 
-uint32_t getTetherBiasCurrent(uint32_t targetVoltageMillivolts);
+uint32_t getTetherBiasCurrent();
 
 /* Cathode Offset */
 
 void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts);
 
-uint32_t getCathodeOffsetVoltage();
+int32_t getCathodeOffsetVoltage();
 
-uint32_t getCathodeOffsetCurrent();
+int32_t getCathodeOffsetCurrent();
 
 /* Repeller */
 
-uint32_t getRepellerVoltage();
+int32_t getRepellerVoltage();
 
 
 #endif /* SENSORS_HPP_ */

@@ -43,16 +43,22 @@ uint16_t ADC::readCountFrom(const Sensor &sensor){
 		result = bitBangPeripheralSPIReceive(12);
 
 	}
+
+	switch(sensor.adc){
+		case TemperatureADC: boardTemperatureADCChipSelectPin.setAsOutput().set(); break;
+		case TetherADC: 	 tetherMeasurementADCChipSelectPin.setAsOutput().set(); break;
+		case MiscADC: 		 miscADCChipSelectPin.setAsOutput().set(); break;
+	}
 	return result;
 }
 
-// Given an ADC count, returns the voltage in millivolts. Max: 5000, Min: 0
-uint32_t ADC::countToVoltage(uint16_t count){
+// Given an ADC count, returns the voltage in millivolts. Max: ADC_VCC_VOLTAGE_MILLIVOLTS, Min: 0
+uint16_t ADC::countToVoltage(uint16_t count){
 	const uint16_t adcResolution = 4095;
 	return ((uint32_t)count * ADC_VCC_VOLTAGE_MILLIVOLTS) / adcResolution; // could bump 4095 to 4096 and use bit shift instead of divide if necessary
 }
 
-uint32_t ADC::readVoltageFrom(const Sensor &sensor){
+uint16_t ADC::readVoltageFrom(const Sensor &sensor){
 	return countToVoltage(readCountFrom(sensor));
 }
 
