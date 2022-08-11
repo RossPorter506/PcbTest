@@ -26,9 +26,9 @@ uint16_t getHeaterCurrent();
 
 void setTetherBiasVoltage(uint32_t targetVoltageMillivolts);
 
-uint32_t getTetherBiasVoltage();
+int32_t getTetherBiasVoltage();
 
-uint32_t getTetherBiasCurrent();
+int32_t getTetherBiasCurrent();
 
 /* Cathode Offset */
 

@@ -30,17 +30,22 @@ void setHeaterVoltage(uint16_t targetVoltageMillivolts){ // CHECKED: Undershoots
 	if (targetVoltageMillivolts > HEATER_MAX_VOLTAGE_MILLIVOLTS){
 		targetVoltageMillivolts = HEATER_MAX_VOLTAGE_MILLIVOLTS;
 	}
+	else if (targetVoltageMillivolts < HEATER_MIN_VOLTAGE_MILLIVOLTS){
+		targetVoltageMillivolts = HEATER_MIN_VOLTAGE_MILLIVOLTS;
+	}
 	uint32_t digitpotTargetResistance = HEATER_TARGET_VOLTAGE_TO_DIGIPOT_RESISTANCE(targetVoltageMillivolts);
 	uint8_t digipotDigitalValue = Digipot::resistanceToCount(digitpotTargetResistance);
 	Digipot::setChannelToValue(heaterDigipotChannel, digipotDigitalValue);
 }
 
-int16_t getHeaterVoltage(){ // CHECKED
+//Returns voltage in millivolts
+uint16_t getHeaterVoltage(){ // CHECKED
 	uint16_t adcVoltage = ADC::readVoltageFrom(heaterVoltageSensor);
 	return HEATER_VOLTAGE_EQ(adcVoltage);
 }
 
-int16_t getHeaterCurrent(){ // CHECKED: Correct order of magnitude, limited by missing 1mohm sense resistor on PCB, using a solder bridge instead >.<
+//Returns current in hundreds of microamps, i.e. XXX.X mA
+int16_t getHeaterCurrent(){ // CHECKED: Within ~0.2mA
 	uint16_t adcVoltage = ADC::readVoltageFrom(heaterCurrentSensor);
 	return HEATER_CURRENT_EQ(adcVoltage);
 }
@@ -56,12 +61,14 @@ void setTetherBiasVoltage(uint32_t targetVoltageMillivolts){
 	DAC::sendCommand(WriteToAndUpdateRegisterX, tetherBiasSupplyControlChannel, count);
 }
 
+//Returns voltage in millivolts
 int32_t getTetherBiasVoltage(){
 	uint16_t adcVoltage = ADC::readVoltageFrom(tetherBiasVoltageSensor);
 	return TETHER_BIAS_VOLTAGE_EQ(adcVoltage);
 }
 
-int32_t getTetherBiasCurrent(){
+//Returns current in hundreds of microamps, i.e. XXX.X mA
+int32_t getTetherBiasCurrent(){ // CHECKED
 	uint16_t adcVoltage = ADC::readVoltageFrom(tetherBiasCurrentSensor);
 	return TETHER_BIAS_CURRENT_EQ(adcVoltage);
 }
@@ -77,19 +84,21 @@ void setCathodeOffsetVoltage(uint32_t targetVoltageMillivolts){ // CHECKED
 	DAC::sendCommand(WriteToAndUpdateRegisterX, cathodeOffsetSupplyControlChannel, count);
 }
 
+//Returns voltage in millivolts
 int32_t getCathodeOffsetVoltage(){ // CHECKED
 	uint16_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetVoltageSensor);
 	return CATHODE_OFFSET_VOLTAGE_EQ(adcVoltage);
 }
 
-int32_t getCathodeOffsetCurrent(){
+//Returns current in MICROamps
+int32_t getCathodeOffsetCurrent(){ // CHECKED
 	uint16_t adcVoltage = ADC::readVoltageFrom(cathodeOffsetCurrentSensor);
 	return CATHODE_OFFSET_CURRENT_EQ(adcVoltage);
 }
 
 /* Repeller */
-
-int32_t getRepellerVoltage(){
+//Returns voltage in millivolts
+int32_t getRepellerVoltage(){ // CHECKED
 	uint16_t adcVoltage = ADC::readVoltageFrom(repellerVoltageSensor);
 	return REPELLER_VOLTAGE_EQ(adcVoltage);
 }
